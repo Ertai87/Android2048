@@ -7,6 +7,8 @@
     android:orientation="vertical"
     android:gravity="center"
     >
+    <!-- Hardcoded string resources will eventually be replaced by images or something.
+        For now I'll leave in these dummy values until I can make it prettier. -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
