@@ -2,9 +2,6 @@ package com.android2048.model;
 
 import com.android2048.common.Constants2048;
 
-/**
- * Created by lyle.waldman on 07/03/2016.
- */
 public class ArrayModel implements Model {
     private int[][] board;
     private int height;

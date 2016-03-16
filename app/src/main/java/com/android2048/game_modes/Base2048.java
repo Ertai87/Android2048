@@ -1,7 +1,8 @@
-package com.android2048;
+package com.android2048.game_modes;
 
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -12,10 +13,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
+import com.android2048.R;
 import com.android2048.common.Constants2048;
+import com.android2048.common.Engine;
+import com.android2048.main.Loader2048;
 import com.android2048.model.ArrayModel;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
 
 import static com.android2048.R.menu.base2048;
@@ -31,12 +34,16 @@ public class Base2048 extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		//Create a 4x4 game grid
         try {
             engine = new Engine(ArrayModel.class, 4, 4);
         } catch (Exception e){
             Log.d(Constants2048.FATAL_TAG, e.getMessage());
             System.exit(1);
         }
+
+        //Set up the GUI.  TextViews are named "box" + x-coord + y-coord where (0, 0) is the top-left and (3, 3) is the bottom right.
         setContentView(R.layout.activity_base2048);
 		boardView[0][0] = (TextView)findViewById(R.id.box00);
 		boardView[0][1] = (TextView)findViewById(R.id.box01);
@@ -55,16 +62,13 @@ public class Base2048 extends AppCompatActivity {
 		boardView[3][2] = (TextView)findViewById(R.id.box32);
 		boardView[3][3] = (TextView)findViewById(R.id.box33);
 		detector = new GestureDetectorCompat(this, new Mover());
-		newgameplus = false;
-		createValue();
-		createValue();
-		updateBoard();
+
+        newGame();
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-        Log.d(Constants2048.DEBUG_TAG, "Creating Options Menu");
 		getMenuInflater().inflate(base2048, menu);
 		return true;
 	}
@@ -75,11 +79,18 @@ public class Base2048 extends AppCompatActivity {
 			case R.id.newgame:
 				newGame();
 				return true;
+            case R.id.main:
+                Intent myIntent = new Intent(Base2048.this, Loader2048.class);
+                Base2048.this.startActivity(myIntent);
 			default:
 				return super.onOptionsItemSelected(item);
 		}
 	}
 
+    /*
+    Build and display a "You win!" dialog which gives the user the option between starting
+    a new game or proceeding to New Game+ mode
+     */
 	public void win(){
 		Builder builder = new Builder(this);
 		builder.setMessage("Congratulations on getting to 2048!  You win!");
@@ -87,9 +98,7 @@ public class Base2048 extends AppCompatActivity {
 		builder.setPositiveButton("Continue", new DialogInterface.OnClickListener(){
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				newgameplus = true;
-				return;
-			}
+				newgameplus = true;			}
 		});
 		builder.setNegativeButton("New Game", new DialogInterface.OnClickListener() {
 			@Override
@@ -100,8 +109,11 @@ public class Base2048 extends AppCompatActivity {
 		builder.create().show();
 	}
 
+    /*
+    Build and display a "Game Over!" dialog which gives the user the option of starting a new game
+    or leaving their current dead game on-screen, requiring them to start a new game manually.
+     */
 	public void endGame(){
-		Log.d("Endgame", "Endgame");
 		Builder builder = new Builder(this);
 		builder.setMessage("Game Over!  Would you like to start a new game?");
 		builder.setTitle("Game Over!");
@@ -113,15 +125,16 @@ public class Base2048 extends AppCompatActivity {
 		});
 		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				return;
-			}
+			public void onClick(DialogInterface dialog, int which) {}
 		});
 		builder.create().show();
 	}
 
+    /*
+    Start a new game, create 2 new values
+     */
 	public void newGame(){
-		engine.board.clear();
+		engine.clearBoard();
 		newgameplus = false;
 		createValue();
 		createValue();
@@ -140,26 +153,29 @@ public class Base2048 extends AppCompatActivity {
 		 * We have a 10% chance of adding a 4, 90% chance of adding a 2
 		 */
 		int x = Math.abs(gen.nextInt()) % 4, y = Math.abs(gen.nextInt()) % 4, flag;
-		while (engine.board.get(x, y) != Constants2048.CLEAR_VALUE){
+		while (engine.getBoardModel().get(x, y) != Constants2048.CLEAR_VALUE){
 			x = Math.abs(gen.nextInt()) % 4;
 			y = Math.abs(gen.nextInt()) % 4;
 		}
 		flag = Math.abs(gen.nextInt()) % 10;
 		if (flag == 0){
-			engine.board.set(x, y, 4);
+			engine.getBoardModel().set(x, y, 4);
 		}else{
-			engine.board.set(x, y, 2);
+			engine.getBoardModel().set(x, y, 2);
 		}
 		return engine.isEndGame();
 	}
 
+    /*
+    Update the GUI based on the model
+     */
 	void updateBoard(){
 		for (int i=0; i < 4; i++){
 			for (int j=0; j < 4; j++){
-				if (engine.board.get(i, j) == Constants2048.CLEAR_VALUE){
+				if (engine.getBoardModel().get(i, j) == Constants2048.CLEAR_VALUE){
 					boardView[i][j].setText("");
 				}else{
-					boardView[i][j].setText("" + engine.board.get(i, j));
+					boardView[i][j].setText("" + engine.getBoardModel().get(i, j));
 				}
 			}
 		}
@@ -174,22 +190,19 @@ public class Base2048 extends AppCompatActivity {
 		private static final int SWIPE_MIN_DISTANCE = 50;
 		private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 
-		private static final String DEBUG_TAG = "Gestures";
-
 		public boolean onDown(MotionEvent e){
-			Log.d(DEBUG_TAG, "onDown");
 			return true;
 		}
 
 		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY){
-			Log.d(DEBUG_TAG, "Fling");
+			Log.d(Constants2048.DEBUG_TAG, "Fling");
 			float xdist, ydist;
-			boolean endgame = false;;
-			xdist = e1.getX() - e2.getX();
-			ydist = e1.getY() - e2.getY();
+			boolean endgame = false;
+			xdist = e2.getX() - e1.getX();
+			ydist = e2.getY() - e1.getY();
 			if (Math.abs(xdist) > Math.abs(ydist)){
 				if (Math.abs(xdist) > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY){
-					if (xdist < 0){
+					if (xdist > 0){
 						if(engine.pushRight()){
 							endgame = createValue();
 							updateBoard();
@@ -203,7 +216,7 @@ public class Base2048 extends AppCompatActivity {
 				}
 			}else{
 				if (Math.abs(ydist) > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY){
-					if (ydist < 0){
+					if (ydist > 0){
 						if(engine.pushDown()){
 							endgame = createValue();
 							updateBoard();

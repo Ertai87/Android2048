@@ -1,21 +1,14 @@
-package com.android2048;
+package com.android2048.common;
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-
-import com.android2048.common.Constants2048;
 import com.android2048.model.Model;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 public class Engine {
-    Model board;
+    Model boardModel;
 
-    public Engine(Class<? extends Model> c, int height, int width) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public Engine(Class<? extends Model> c, int height, int width) throws IllegalAccessException, InvocationTargetException, InstantiationException, NullPointerException {
         Constructor ctors[] = c.getConstructors();
         Constructor ctor = null;
         for (int i = 0; i < ctors.length; i++) {
@@ -23,17 +16,17 @@ public class Engine {
             if (ctor.getGenericParameterTypes().length == 2)
                 break;
         }
-        board = (Model)ctor.newInstance(height, width);
+        boardModel = (Model)ctor.newInstance(height, width);
     }
 
-    boolean isEndGame(){
+    public boolean isEndGame(){
         for (int i=0; i < 4; i++){
             for (int j = 0; j < 4; j++){
-                if (board.get(i, j) == Constants2048.CLEAR_VALUE ||
-                        (i > 0 && board.get(i, j) == board.get(i-1, j)) ||
-                        (i < 3 && board.get(i, j) == board.get(i+1, j)) ||
-                        (j > 0 && board.get(i, j) == board.get(i, j-1)) ||
-                        (j < 3 && board.get(i, j) == board.get(i, j+1))
+                if (boardModel.get(i, j) == Constants2048.CLEAR_VALUE ||
+                        (i > 0 && boardModel.get(i, j) == boardModel.get(i-1, j)) ||
+                        (i < 3 && boardModel.get(i, j) == boardModel.get(i+1, j)) ||
+                        (j > 0 && boardModel.get(i, j) == boardModel.get(i, j-1)) ||
+                        (j < 3 && boardModel.get(i, j) == boardModel.get(i, j+1))
                         ){
                     return false;
                 }
@@ -43,10 +36,10 @@ public class Engine {
     }
 
     /* Checks whether a 2048 is on the board */
-    boolean checkWin(){
+    public boolean checkWin(){
         for (int i=0; i < 4; i++){
             for (int j = 0; j < 4; j++){
-                if (board.get(i, j) == Constants2048.WIN_VALUE){
+                if (boardModel.get(i, j) == Constants2048.WIN_VALUE){
                     return true;
                 }
             }
@@ -54,13 +47,13 @@ public class Engine {
         return false;
     }
 
-    boolean pushRight(){
+    public boolean pushRight(){
         Log.d(Constants2048.DEBUG_TAG, "pushRight");
 		/* Since we count from right to left, we shouldn't have any skipping errors*/
         boolean ret = false;
-        for (int i=0; i < board.getHeight(); i++){
-            int[] row = board.getRow(i);
-            for (int j = board.getWidth() - 1; j >= 0; j--){
+        for (int i=0; i < boardModel.getHeight(); i++){
+            int[] row = boardModel.getRow(i);
+            for (int j = boardModel.getWidth() - 1; j >= 0; j--){
                 if (row[j] == Constants2048.CLEAR_VALUE){
                     int k = j;
                     for (; k >= 0 && row[k] == Constants2048.CLEAR_VALUE; k--);
@@ -80,22 +73,22 @@ public class Engine {
                     }
                 }
             }
-            board.setRow(i, row);
+            boardModel.setRow(i, row);
         }
         return ret;
     }
 
-    boolean pushLeft(){
+    public boolean pushLeft(){
         Log.d(Constants2048.DEBUG_TAG, "pushLeft");
 		/* Since we count from left to right, we shouldn't have any skipping errors*/
         boolean ret = false;
-        for (int i=0; i < board.getHeight(); i++){
-            int[] row = board.getRow(i);
-            for (int j = 0; j < board.getWidth(); j++){
+        for (int i=0; i < boardModel.getHeight(); i++){
+            int[] row = boardModel.getRow(i);
+            for (int j = 0; j < boardModel.getWidth(); j++){
                 if (row[j] == Constants2048.CLEAR_VALUE){
                     int k = j;
-                    for (; k < board.getWidth() && row[k] == Constants2048.CLEAR_VALUE; k++);
-                    if (k < board.getWidth()){
+                    for (; k < boardModel.getWidth() && row[k] == Constants2048.CLEAR_VALUE; k++);
+                    if (k < boardModel.getWidth()){
                         row[j] = row[k];
                         row[k] = Constants2048.CLEAR_VALUE;
                         j--;
@@ -103,30 +96,30 @@ public class Engine {
                     }
                 }else{
                     int k = j + 1;
-                    for (; k < board.getWidth() && row[k] == Constants2048.CLEAR_VALUE; k++);
-                    if (k < board.getWidth() && row[k] == row[j]){
+                    for (; k < boardModel.getWidth() && row[k] == Constants2048.CLEAR_VALUE; k++);
+                    if (k < boardModel.getWidth() && row[k] == row[j]){
                         row[j] *= 2;
                         row[k] = Constants2048.CLEAR_VALUE;
                         ret = true;
                     }
                 }
             }
-            board.setRow(i, row);
+            boardModel.setRow(i, row);
         }
         return ret;
     }
 
-    boolean pushUp(){
+    public boolean pushUp(){
         Log.d(Constants2048.DEBUG_TAG, "pushUp");
 		/* Since we count from top to bottom, we shouldn't have any skipping errors*/
         boolean ret = false;
-        for (int i = 0; i < board.getWidth(); i++){
-            int[] col = board.getCol(i);
-            for (int j = 0; j < board.getHeight(); j++){
+        for (int i = 0; i < boardModel.getWidth(); i++){
+            int[] col = boardModel.getCol(i);
+            for (int j = 0; j < boardModel.getHeight(); j++){
                 if (col[j] == Constants2048.CLEAR_VALUE){
                     int k = j;
-                    for (; k < board.getHeight() && col[k] == Constants2048.CLEAR_VALUE; k++);
-                    if (k < board.getHeight()){
+                    for (; k < boardModel.getHeight() && col[k] == Constants2048.CLEAR_VALUE; k++);
+                    if (k < boardModel.getHeight()){
                         col[j] = col[k];
                         col[k] = Constants2048.CLEAR_VALUE;
                         j--;
@@ -134,26 +127,26 @@ public class Engine {
                     }
                 }else{
                     int k = j + 1;
-                    for (; k < board.getHeight() && col[k] == Constants2048.CLEAR_VALUE; k++);
-                    if (k < board.getHeight() && col[k] == col[j]){
+                    for (; k < boardModel.getHeight() && col[k] == Constants2048.CLEAR_VALUE; k++);
+                    if (k < boardModel.getHeight() && col[k] == col[j]){
                         col[j] *= 2;
                         col[k] = Constants2048.CLEAR_VALUE;
                         ret = true;
                     }
                 }
             }
-            board.setCol(i, col);
+            boardModel.setCol(i, col);
         }
         return ret;
     }
 
-    boolean pushDown(){
+    public boolean pushDown(){
         Log.d(Constants2048.DEBUG_TAG, "pushDown");
 		/* Since we count from bottom to top, we shouldn't have any skipping errors*/
         boolean ret = false;
-        for (int i = 0; i < board.getWidth(); i++){
-            int[] col = board.getCol(i);
-            for (int j = board.getHeight() - 1; j >= 0; j--){
+        for (int i = 0; i < boardModel.getWidth(); i++){
+            int[] col = boardModel.getCol(i);
+            for (int j = boardModel.getHeight() - 1; j >= 0; j--){
                 if (col[j] == Constants2048.CLEAR_VALUE){
                     int k = j;
                     for (; k >= 0 && col[k] == Constants2048.CLEAR_VALUE; k--);
@@ -173,8 +166,16 @@ public class Engine {
                     }
                 }
             }
-            board.setCol(i, col);
+            boardModel.setCol(i, col);
         }
         return ret;
+    }
+
+    public Model getBoardModel(){
+        return boardModel;
+    }
+
+    public void clearBoard(){
+        boardModel.clear();
     }
 }
