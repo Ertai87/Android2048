@@ -5,5 +5,7 @@
     <string name="action_settings">Settings</string>
     <string name="newgame">New Game...</string>
     <string name="main_menu">Main Menu</string>
+    <string name="base_title">2048</string>
+    <string name="zero_title">2048+0</string>
 
 </resources>

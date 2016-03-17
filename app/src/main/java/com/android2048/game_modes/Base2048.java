@@ -19,7 +19,7 @@ import com.android2048.common.Engine;
 import com.android2048.main.Loader2048;
 import com.android2048.model.ArrayModel;
 
-import java.util.Random;
+import java.util.Comparator;
 
 import static com.android2048.R.menu.base2048;
 
@@ -27,7 +27,6 @@ public class Base2048 extends AppCompatActivity {
 
 	TextView[][] boardView = new TextView[4][4];
     Engine engine;
-	Random gen = new Random();
 	GestureDetectorCompat detector;
 	boolean newgameplus; //If game is in "New Game+" state: If 2048 has been reached and "Continue" was chosen
 
@@ -37,7 +36,19 @@ public class Base2048 extends AppCompatActivity {
 
 		//Create a 4x4 game grid
         try {
-            engine = new Engine(ArrayModel.class, 4, 4);
+			Integer[] genprobs = new Integer[100];
+			for (int i=0; i < 10; i++){
+				genprobs[i] = 4;
+			}
+			for (int i=10; i < 100; i++){
+				genprobs[i] = 2;
+			}
+            engine = new Engine<>(ArrayModel.class, 4, 4, Constants2048.CLEAR_VALUE, Constants2048.WIN_VALUE, new Comparator<Integer>() {
+				@Override
+				public int compare(Integer lhs, Integer rhs) {
+					return lhs - rhs;
+				}
+			}, genprobs);
         } catch (Exception e){
             Log.d(Constants2048.FATAL_TAG, e.getMessage());
             System.exit(1);
@@ -117,7 +128,7 @@ public class Base2048 extends AppCompatActivity {
 		Builder builder = new Builder(this);
 		builder.setMessage("Game Over!  Would you like to start a new game?");
 		builder.setTitle("Game Over!");
-		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
+		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				newGame();
@@ -125,7 +136,8 @@ public class Base2048 extends AppCompatActivity {
 		});
 		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int which) {}
+			public void onClick(DialogInterface dialog, int which) {
+			}
 		});
 		builder.create().show();
 	}
@@ -136,34 +148,9 @@ public class Base2048 extends AppCompatActivity {
 	public void newGame(){
 		engine.clearBoard();
 		newgameplus = false;
-		createValue();
-		createValue();
+		engine.createValue();
+		engine.createValue();
 		updateBoard();
-	}
-
-	/*Creates a new value on the board, and then returns whether or not there
-	 * is a valid move on the board
-	 *
-	 * true = there is no move remaining
-	 * false = there is a valid move
-	 */
-
-	boolean createValue(){
-		/* Add a new value to a random open square
-		 * We have a 10% chance of adding a 4, 90% chance of adding a 2
-		 */
-		int x = Math.abs(gen.nextInt()) % 4, y = Math.abs(gen.nextInt()) % 4, flag;
-		while (engine.getBoardModel().get(x, y) != Constants2048.CLEAR_VALUE){
-			x = Math.abs(gen.nextInt()) % 4;
-			y = Math.abs(gen.nextInt()) % 4;
-		}
-		flag = Math.abs(gen.nextInt()) % 10;
-		if (flag == 0){
-			engine.getBoardModel().set(x, y, 4);
-		}else{
-			engine.getBoardModel().set(x, y, 2);
-		}
-		return engine.isEndGame();
 	}
 
     /*
@@ -172,7 +159,7 @@ public class Base2048 extends AppCompatActivity {
 	void updateBoard(){
 		for (int i=0; i < 4; i++){
 			for (int j=0; j < 4; j++){
-				if (engine.getBoardModel().get(i, j) == Constants2048.CLEAR_VALUE){
+				if (engine.getBoardModel().get(i, j).equals(Constants2048.CLEAR_VALUE)){
 					boardView[i][j].setText("");
 				}else{
 					boardView[i][j].setText("" + engine.getBoardModel().get(i, j));
@@ -204,12 +191,12 @@ public class Base2048 extends AppCompatActivity {
 				if (Math.abs(xdist) > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY){
 					if (xdist > 0){
 						if(engine.pushRight()){
-							endgame = createValue();
+							endgame = engine.createValue();
 							updateBoard();
 						}
 					}else{
 						if (engine.pushLeft()){
-							endgame = createValue();
+							endgame = engine.createValue();
 							updateBoard();
 						}
 					}
@@ -218,12 +205,12 @@ public class Base2048 extends AppCompatActivity {
 				if (Math.abs(ydist) > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY){
 					if (ydist > 0){
 						if(engine.pushDown()){
-							endgame = createValue();
+							endgame = engine.createValue();
 							updateBoard();
 						}
 					}else{
 						if (engine.pushUp()){
-							endgame = createValue();
+							endgame = engine.createValue();
 							updateBoard();
 						}
 					}

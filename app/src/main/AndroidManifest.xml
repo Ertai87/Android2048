@@ -10,7 +10,12 @@
         android:theme="@style/Theme.AppCompat.Light">
         <activity
             android:name=".game_modes.Base2048"
-            android:label="@string/app_name"
+            android:label="@string/base_title"
+            android:theme="@style/Base.Theme.AppCompat.Light.DarkActionBar">
+        </activity>
+        <activity
+            android:name=".game_modes.Zero2048"
+            android:label="@string/zero_title"
             android:theme="@style/Base.Theme.AppCompat.Light.DarkActionBar">
         </activity>
         <activity

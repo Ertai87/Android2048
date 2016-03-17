@@ -12,6 +12,7 @@ import android.widget.Button;
 
 import com.android2048.R;
 import com.android2048.game_modes.Base2048;
+import com.android2048.game_modes.Zero2048;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -31,6 +32,14 @@ public class Loader2048 extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent myIntent = new Intent(Loader2048.this, Base2048.class);
+                Loader2048.this.startActivity(myIntent);
+            }
+        });
+
+        zero.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(Loader2048.this, Zero2048.class);
                 Loader2048.this.startActivity(myIntent);
             }
         });
