@@ -64,7 +64,6 @@ public class Engine<T> {
     }
 
     public boolean pushRight(){
-        Log.d(Constants2048.DEBUG_TAG, "pushRight");
 		/* Since we count from right to left, we shouldn't have any skipping errors*/
         boolean ret = false;
         for (int i=0; i < boardModel.getHeight(); i++){
@@ -95,7 +94,6 @@ public class Engine<T> {
     }
 
     public boolean pushLeft(){
-        Log.d(Constants2048.DEBUG_TAG, "pushLeft");
 		/* Since we count from left to right, we shouldn't have any skipping errors*/
         boolean ret = false;
         for (int i=0; i < boardModel.getHeight(); i++){
@@ -126,7 +124,6 @@ public class Engine<T> {
     }
 
     public boolean pushUp(){
-        Log.d(Constants2048.DEBUG_TAG, "pushUp");
 		/* Since we count from top to bottom, we shouldn't have any skipping errors*/
         boolean ret = false;
         for (int i = 0; i < boardModel.getWidth(); i++){
@@ -157,7 +154,6 @@ public class Engine<T> {
     }
 
     public boolean pushDown(){
-        Log.d(Constants2048.DEBUG_TAG, "pushDown");
 		/* Since we count from bottom to top, we shouldn't have any skipping errors*/
         boolean ret = false;
         for (int i = 0; i < boardModel.getWidth(); i++){

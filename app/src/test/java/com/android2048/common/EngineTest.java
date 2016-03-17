@@ -14,6 +14,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -26,7 +27,19 @@ public class EngineTest {
 
     @Before
     public void setUp() throws IllegalAccessException, InstantiationException, InvocationTargetException {
-        testEngine = new Engine(ArrayModel.class, 4, 4);
+        Integer[] genprobs = new Integer[100];
+        for (int i=0; i < 10; i++){
+            genprobs[i] = 4;
+        }
+        for (int i=10; i < 100; i++){
+            genprobs[i] = 2;
+        }
+        testEngine = new Engine<>(ArrayModel.class, 4, 4, Constants2048.CLEAR_VALUE, Constants2048.WIN_VALUE, new Comparator<Integer>() {
+            @Override
+            public int compare(Integer lhs, Integer rhs) {
+                return lhs - rhs;
+            }
+        }, genprobs);
     }
 
     @Test
