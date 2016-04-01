@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -159,6 +160,7 @@ public class Base2048 extends AppCompatActivity {
 	void updateBoard(){
 		for (int i=0; i < 4; i++){
 			for (int j=0; j < 4; j++){
+				boardView[i][j].setTextSize(TypedValue.COMPLEX_UNIT_SP, 30 / Math.max((Integer)engine.getBoardModel().get(i, j).toString().length() - 2, 1));
 				if (engine.getBoardModel().get(i, j).equals(Constants2048.CLEAR_VALUE)){
 					boardView[i][j].setText("");
 				}else{
